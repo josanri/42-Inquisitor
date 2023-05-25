@@ -3,25 +3,38 @@ version: '3.8'
 services:
   server-ftp:
     container_name: server-ftp
+    build:
+      context: ./
+      dockerfile: ./server.Dockerfile
+    mac_address: $SERVER_MAC
     environment:
       - CUSTOM_USER=user
-      - PASSWORD=12345
+      - PASSWORD=$FTP_PASSWORDD
     networks:
       - ftpnet
     volumes:
-      - ./ftp-server: #server path
+      - ./ftp-server:/data #server path
   attacker-ftp:
     container_name: attacker
+    build:
+      context: ./
+      dockerfile: ./attacker.Dockerfile
+    mac_address: $ATTACKER_MAC
   client-ftp:
     container_name: client-ftp
+    build:
+      context: ./
+      dockerfile: ./client.Dockerfile
+    mac_address: $CLIENT_MAC
     networks:
-      - ftpnet
+      ftpnet:
+        ipv4_address: $CLIENT_IP
     volumes:
-      - ./ftp-client: #client path
+      - ./ftp-client:/data #client path
 
 networks:
-  - ftpnet
-
-volumes:
-
-  
+  ftpnet:
+    ipam:
+      driver: default
+      config:
+        - subnet: $SUBNET_RANGE
