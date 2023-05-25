@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  server-ftp:
+    container_name: server-ftp
+    environment:
+      - CUSTOM_USER=user
+      - PASSWORD=12345
+    networks:
+      - ftpnet
+    volumes:
+      - ./ftp-server: #server path
+  attacker-ftp:
+    container_name: attacker
+  client-ftp:
+    container_name: client-ftp
+    networks:
+      - ftpnet
+    volumes:
+      - ./ftp-client: #client path
+
+networks:
+  - ftpnet
+
+volumes:
+
+  
