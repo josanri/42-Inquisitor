@@ -8,10 +8,11 @@ services:
       dockerfile: ./server.Dockerfile
     mac_address: $SERVER_MAC
     environment:
-      - CUSTOM_USER=user
-      - PASSWORD=$FTP_PASSWORDD
+      - FTP_USER=$FTP_USER
+      - FTP_PASSWORD=$FTP_PASSWORD
     networks:
-      - ftpnet
+      ftpnet:
+        ipv4_address: $SERVER_IP
     volumes:
       - ./ftp-server:/data #server path
   attacker-ftp:
@@ -19,7 +20,12 @@ services:
     build:
       context: ./
       dockerfile: ./attacker.Dockerfile
+    networks:
+      ftpnet:
+        ipv4_address: $ATTACKER_IP
     mac_address: $ATTACKER_MAC
+    depends_on:
+      - server-ftp
   client-ftp:
     container_name: client-ftp
     build:
@@ -31,6 +37,8 @@ services:
         ipv4_address: $CLIENT_IP
     volumes:
       - ./ftp-client:/data #client path
+    depends_on:
+      - attacker-ftp
 
 networks:
   ftpnet:
