@@ -14,7 +14,7 @@ services:
       ftpnet:
         ipv4_address: $SERVER_IP
     volumes:
-      - ./ftp-server:/data #server path
+      - ./ftp-server:/data/ftp #Server path
   attacker-ftp:
     container_name: attacker
     build:
@@ -37,6 +37,8 @@ services:
       context: ./
       dockerfile: ./client.Dockerfile
     mac_address: $CLIENT_MAC
+    ports:
+      - 3000:3000 # FTP client web
     networks:
       ftpnet:
         ipv4_address: $CLIENT_IP
