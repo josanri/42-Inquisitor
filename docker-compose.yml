@@ -20,6 +20,11 @@ services:
     build:
       context: ./
       dockerfile: ./attacker.Dockerfile
+      args:
+        - IP-src=$SERVER_IP
+        - MAC-src=$SERVER_MAC
+        - IP-target=$CLIENT_IP
+        - MAC-target=$CLIENT_MAC
     networks:
       ftpnet:
         ipv4_address: $ATTACKER_IP
