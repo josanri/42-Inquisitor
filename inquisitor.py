@@ -73,8 +73,9 @@ class Spoofer(threading.Thread):
         pcap_listener.setfilter("port 21")
         while not self.event.is_set():
             next_packet = pcap_listener.next()
-            print(f"Header {next_packet[0]}", flush=True)
-            print(f'Packet content {next_packet[1]}', flush=True)
+            scapy.IP(next_packet[1]).show()
+            scapy.Ether(next_packet[1]).show()
+
         self.spoofer_refresher.join()
 
 
