@@ -1,3 +1,3 @@
 FROM webdevops/vsftp
 
-EXPOSE 21
+EXPOSE 20 21

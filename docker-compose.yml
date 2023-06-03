@@ -14,23 +14,24 @@ services:
       ftpnet:
         ipv4_address: $SERVER_IP
     volumes:
-      - ./ftp-server:/data/ftp #Server path
+      - ./ftp-server:/home/abc #Server path
   attacker-ftp:
     container_name: attacker
     build:
       context: ./
       dockerfile: ./attacker.Dockerfile
-      args:
-        - IP-src=$SERVER_IP
-        - MAC-src=$SERVER_MAC
-        - IP-target=$CLIENT_IP
-        - MAC-target=$CLIENT_MAC
+    environment:
+      - IP_SRC=$SERVER_IP
+      - MAC_SRC=$SERVER_MAC
+      - IP_TARGET=$CLIENT_IP
+      - MAC_TARGET=$CLIENT_MAC
     networks:
       ftpnet:
         ipv4_address: $ATTACKER_IP
     mac_address: $ATTACKER_MAC
     depends_on:
       - server-ftp
+      - client-ftp
   client-ftp:
     container_name: client-ftp
     build:
@@ -45,7 +46,7 @@ services:
     volumes:
       - ./ftp-client:/data #client path
     depends_on:
-      - attacker-ftp
+      - server-ftp
 
 networks:
   ftpnet:
