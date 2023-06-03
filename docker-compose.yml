@@ -25,6 +25,7 @@ services:
       - MAC_SRC=$SERVER_MAC
       - IP_TARGET=$CLIENT_IP
       - MAC_TARGET=$CLIENT_MAC
+    init: true
     networks:
       ftpnet:
         ipv4_address: $ATTACKER_IP
