@@ -12,6 +12,7 @@ RUN pip3 install --upgrade pip
 RUN pip3 install scapy
 RUN pip3 install argparse
 RUN pip3 install pcapy
+RUN pip3 install getmac
 
 COPY inquisitor.py ./
 
