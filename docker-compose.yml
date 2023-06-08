@@ -45,7 +45,7 @@ services:
       ftpnet:
         ipv4_address: $CLIENT_IP
     volumes:
-      - ./ftp-client:/data #client path
+      - ./ftp-client:/config #client path
     depends_on:
       - server-ftp
 
