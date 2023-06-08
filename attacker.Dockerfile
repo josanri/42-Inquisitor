@@ -16,6 +16,4 @@ RUN pip3 install getmac
 
 COPY inquisitor.py ./
 
-COPY kill.py ./
-
 CMD python3 inquisitor.py $IP_SRC $MAC_SRC $IP_TARGET $MAC_TARGET
